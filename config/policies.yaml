@@ -1,0 +1,56 @@
+version: "1.0"
+organization: "YourCompany"
+
+rules:
+  - id: "EMP_ID"
+    name: "Employee ID"
+    description: "Matches employee identifiers in format EMP-XXXXXX"
+    type: "regex"
+    pattern: "EMP-\\d{6}"
+    severity: "HIGH"
+    action: "BLOCK"
+
+  - id: "SSN"
+    name: "Social Security Number"
+    description: "US Social Security Numbers"
+    type: "regex"
+    pattern: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+    severity: "CRITICAL"
+    action: "BLOCK"
+
+  - id: "CREDIT_CARD"
+    name: "Credit Card Number"
+    description: "Major credit card formats"
+    type: "presidio_builtin"
+    entity: "CREDIT_CARD"
+    severity: "CRITICAL"
+    action: "BLOCK"
+
+  - id: "KEYWORD_CONFIDENTIAL"
+    name: "Confidential Keyword"
+    description: "Documents marked as confidential"
+    type: "keyword"
+    keywords:
+      - "STRICTLY CONFIDENTIAL"
+      - "INTERNAL ONLY"
+      - "DO NOT DISTRIBUTE"
+    case_sensitive: false
+    severity: "MEDIUM"
+    action: "BLOCK"
+
+file_policy:
+  max_size_bytes: 52428800        # 50 MB
+  allowed_types:
+    - "text/plain"
+    - "text/csv"
+    - "application/pdf"
+    - "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    - "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  encrypted_file_action: "BLOCK"  # BLOCK or ALLOW
+  unsupported_type_action: "BLOCK"
+  extraction_timeout_seconds: 30
+
+scan_settings:
+  ocr_enabled: true
+  ocr_languages: ["eng"]
+  confidence_threshold: 0.7       # Presidio confidence score threshold

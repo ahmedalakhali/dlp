@@ -1,0 +1,3 @@
+This is a clean document with no sensitive information.
+It contains only ordinary business text about quarterly reports
+and team meeting schedules.

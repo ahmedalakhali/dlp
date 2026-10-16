@@ -1,0 +1,26 @@
+proxy:
+  listen_host: "127.0.0.1"
+  listen_port: 8080
+  policy_service_url: "http://127.0.0.1:8000"
+  request_body_limit_bytes: 104857600  # 100 MB buffer limit
+  scan_timeout_seconds: 60
+  fail_action: "BLOCK"   # What to do if policy service is unreachable
+
+tls:
+  cert_dir: "./certs"
+  # mitmproxy generates its own CA; install it via Group Policy
+
+bypass:
+  # Domains that should NOT be intercepted (banking, auth, etc.)
+  domains:
+    - "*.bank.com"
+    - "login.microsoftonline.com"
+    - "*.googleapis.com"
+    # Windows Update & OS Telemetry bypass (prevents socket exhaustion from background OS downloads)
+    - "*.windowsupdate.com"
+    - "*.update.microsoft.com"
+    - "*.delivery.mp.microsoft.com"
+    - "*.trafficshaping.dsp.mp.microsoft.com"
+    - "*.events.data.microsoft.com"
+    - "download.windowsupdate.com"
+    - "au.download.windowsupdate.com"

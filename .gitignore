@@ -1,0 +1,40 @@
+# Python & Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Pytest & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local databases, logs & runtime data
+audit/*.db
+audit/*.db-journal
+*.log
+received/*
+!received/.gitkeep
+.dlp_pids
+
+# Certificates & Keys
+certs/*.key
+certs/*.crt
+certs/*.cer
+*.cer
+*.key
+*.pem
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*~
+Thumbs.db
+[Dd]esktop.ini
+.DS_Store

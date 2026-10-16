@@ -1,0 +1,1 @@
+Employee record: EMP-123456, name: John Doe

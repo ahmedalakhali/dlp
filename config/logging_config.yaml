@@ -1,0 +1,7 @@
+audit:
+  database: "sqlite:///./audit/dlp_audit.db"
+  log_file: "./audit/dlp_events.log"
+  log_level: "INFO"
+  # Never log the actual sensitive content — only the rule ID and match count
+  redact_content: true
+  max_content_preview_chars: 0   # 0 = no content in logs
