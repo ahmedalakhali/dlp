@@ -66,15 +66,18 @@ class ScanPipeline:
         analyzer: DLPAnalyzer,
         file_policy: dict[str, Any],
         scan_settings: dict[str, Any],
+        extension_rules: list[dict[str, Any]] | None = None,
     ) -> None:
         self.analyzer = analyzer
         self.file_policy = file_policy
         self.scan_settings = scan_settings
+        self.extension_rules = extension_rules or []
 
     async def scan(
         self,
         file_bytes: bytes,
         mime_type: str,
+        filename: str = "",
         tika_url: str = "http://localhost:9998",
     ) -> ScanDecision:
         """Run the full scan pipeline on a file.
@@ -93,6 +96,43 @@ class ScanPipeline:
 
         def _elapsed_ms() -> int:
             return int((time.perf_counter() - start) * 1000)
+
+        # --- 0. Extension check -------------------------------------------
+        if filename:
+            from pathlib import Path
+            ext = Path(filename).suffix.lower()
+            if ext:
+                blocked_exts = {
+                    e.lower() if e.startswith(".") else f".{e.lower()}"
+                    for e in self.file_policy.get("blocked_extensions", [])
+                }
+                if ext in blocked_exts:
+                    return ScanDecision(
+                        action="BLOCK",
+                        reason=f"File extension '{ext}' is blocked by policy",
+                        matched_rules=["BLOCKED_EXTENSION"],
+                        scan_duration_ms=_elapsed_ms(),
+                        file_size=file_size,
+                        mime_type=mime_type,
+                    )
+
+                for rule in self.extension_rules:
+                    rule_exts = {
+                        e.lower() if e.startswith(".") else f".{e.lower()}"
+                        for e in rule.get("extensions", [])
+                    }
+                    if ext in rule_exts:
+                        rule_id = rule.get("id", "BLOCKED_EXTENSION")
+                        rule_name = rule.get("name", ext)
+                        action = rule.get("action", "BLOCK")
+                        return ScanDecision(
+                            action=action,
+                            reason=f"Blocked file extension '{ext}' by rule: {rule_name}",
+                            matched_rules=[rule_id],
+                            scan_duration_ms=_elapsed_ms(),
+                            file_size=file_size,
+                            mime_type=mime_type,
+                        )
 
         # --- 1. Size check ------------------------------------------------
         max_size = self.file_policy.get("max_size_bytes", 52_428_800)
@@ -254,8 +294,11 @@ def create_pipeline(
     """
     threshold = scan_settings.get("confidence_threshold", 0.7)
     analyzer = DLPAnalyzer(policies=policies, confidence_threshold=threshold)
+    rules = policies.get("rules", [])
+    extension_rules = [r for r in rules if r.get("type") == "file_extension"]
     return ScanPipeline(
         analyzer=analyzer,
         file_policy=file_policy,
         scan_settings=scan_settings,
+        extension_rules=extension_rules,
     )

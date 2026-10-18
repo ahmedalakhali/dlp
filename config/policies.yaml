@@ -38,7 +38,26 @@ rules:
     severity: "MEDIUM"
     action: "BLOCK"
 
+  - id: "BLOCK_EXECUTABLES"
+    name: "Executable Files"
+    description: "Blocks executable binaries and scripts from being uploaded"
+    type: "file_extension"
+    extensions:
+      - ".exe"
+      - ".dll"
+      - ".bat"
+      - ".cmd"
+      - ".msi"
+    severity: "CRITICAL"
+    action: "BLOCK"
+
 file_policy:
+  blocked_extensions:
+    - ".exe"
+    - ".dll"
+    - ".bat"
+    - ".cmd"
+    - ".msi"
   max_size_bytes: 52428800        # 50 MB
   allowed_types:
     - "text/plain"

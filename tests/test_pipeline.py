@@ -37,11 +37,20 @@ TEST_POLICIES = {
             "severity": "MEDIUM",
             "action": "BLOCK",
         },
+        {
+            "id": "BLOCK_EXECUTABLES",
+            "name": "Executable Files",
+            "type": "file_extension",
+            "extensions": [".exe", ".dll", ".bat"],
+            "severity": "CRITICAL",
+            "action": "BLOCK",
+        },
     ],
 }
 
 FILE_POLICY = {
     "max_size_bytes": 1_000_000,  # 1 MB for testing
+    "blocked_extensions": [".exe", ".dll", ".bat"],
     "allowed_types": ["text/plain", "application/pdf"],
     "encrypted_file_action": "BLOCK",
     "unsupported_type_action": "BLOCK",
@@ -184,3 +193,17 @@ class TestScanDecisionFields:
         assert decision.scan_duration_ms >= 0
         assert decision.file_size == 5
         assert decision.mime_type == "text/plain"
+
+
+class TestExtensionCheck:
+    @pytest.mark.asyncio
+    async def test_exe_file_blocked_by_rule(self, pipeline: ScanPipeline):
+        """Files with .exe extension should be blocked."""
+        decision = await pipeline.scan(
+            file_bytes=b"MZ\x90\x00\x03fake-executable",
+            mime_type="application/x-dosexec",
+            filename="malicious_payload.exe",
+        )
+        assert decision.action == "BLOCK"
+        assert any("EXE" in r or "EXTENSION" in r for r in decision.matched_rules)
+        assert ".exe" in decision.reason.lower()

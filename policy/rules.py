@@ -67,7 +67,7 @@ class RuleManager:
 
     def _validate_rules(self) -> None:
         """Validate that each rule has the minimum required fields."""
-        valid_types = {"regex", "keyword", "presidio_builtin"}
+        valid_types = {"regex", "keyword", "presidio_builtin", "file_extension"}
 
         for i, rule in enumerate(self._rules):
             rule_id = rule.get("id")
@@ -89,6 +89,9 @@ class RuleManager:
 
             if rule_type == "presidio_builtin" and not rule.get("entity"):
                 raise ValueError(f"Builtin rule '{rule_id}' is missing 'entity'")
+
+            if rule_type == "file_extension" and not rule.get("extensions"):
+                raise ValueError(f"File extension rule '{rule_id}' is missing 'extensions'")
 
     # ------------------------------------------------------------------
     # Accessors

@@ -108,6 +108,7 @@ async def scan_file(request: ScanRequest) -> ScanResponse:
     decision = await _pipeline.scan(
         file_bytes=file_bytes,
         mime_type=mime_type,
+        filename=request.filename,
         tika_url=_tika_url,
     )
 

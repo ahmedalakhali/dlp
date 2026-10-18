@@ -54,7 +54,7 @@ class RuleDefinition(BaseModel):
     id: str
     name: str
     description: str = ""
-    type: str  # "regex" | "keyword" | "presidio_builtin"
+    type: str  # "regex" | "keyword" | "presidio_builtin" | "file_extension"
     severity: str = "MEDIUM"
     action: str = "BLOCK"
 
