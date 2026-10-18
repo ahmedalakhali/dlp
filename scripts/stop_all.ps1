@@ -44,8 +44,20 @@ foreach ($port in $ports) {
     }
 }
 
-# 3. Ensure Windows system proxy is disabled
+# 3. Ensure Windows system proxy is disabled and flush browser cache
 Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' -Name ProxyEnable -Value 0 -ErrorAction SilentlyContinue
+
+try {
+    $signature = @'
+[DllImport("wininet.dll", SetLastError = true, CharSet=CharSet.Auto)]
+public static extern bool InternetSetOption(IntPtr hInternet, int dwOption, IntPtr lpBuffer, int dwBufferLength);
+'@
+    $wininet = Add-Type -MemberDefinition $signature -Name "WinINetFlush_$([System.Guid]::NewGuid().ToString('N'))" -Namespace "WinINet" -PassThru
+    [void]$wininet::InternetSetOption([IntPtr]::Zero, 39, [IntPtr]::Zero, 0)
+    [void]$wininet::InternetSetOption([IntPtr]::Zero, 37, [IntPtr]::Zero, 0)
+} catch {
+    # Ignore if already defined in session
+}
 
 # 4. Stop Tika container if running
 if (Get-Command docker-compose -ErrorAction SilentlyContinue) {
